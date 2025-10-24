@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Gallery of Life</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        neon: '#00ff88',
+                        dark: '#0a0a0a',
+                        gray: '#1a1a1a'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+        }
+        .neon-glow {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+        .gradient-border {
+            background: linear-gradient(45deg, #00ff88, #0088ff);
+            padding: 2px;
+            border-radius: 8px;
+        }
+        .gradient-border > div {
+            background: #0a0a0a;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <nav class="bg-gray-900 p-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-neon to-blue-400 bg-clip-text text-transparent">
+                Admin Dashboard
+            </h1>
+            <button id="logoutBtn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                Logout
+            </button>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Filter Section -->
+        <div class="gradient-border mb-8">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold mb-4">Analytics Filters</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                    <label class="block text-sm font-medium mb-2">Period</label>
+                        <select id="periodSelect" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-black">
+                            <option value="total">Total</option>
+                            <option value="daily">Daily</option>
+                            <option value="monthly">Monthly</optio  n>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                    <div id="dateFilter" class="hidden">
+                        <label class="block text-sm font-medium mb-2">Date</label>
+                        <input type="date" id="dateInput" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-black">
+                    </div>
+                    <div id="monthFilter" class="hidden">
+                        <label class="block text-sm font-medium mb-2">Month</label>
+                        <input type="month" id="monthInput" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-black">
+                    </div>
+                    <div id="yearFilter" class="hidden">
+                        <label class="block text-sm font-medium mb-2">Year</label>
+                        <input type="number" id="yearInput" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-black" placeholder="2023" min="2000" max="2030">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="applyFilterBtn" class="px-4 py-2 bg-neon text-black rounded-md hover:bg-green-400 transition-colors">
+                            Apply Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="gradient-border">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold mb-4">User Registrations</h3>
+                    <div class="text-3xl font-bold text-neon mb-2" id="userRegistrationsCount">0</div>
+                    <p class="text-sm text-gray-400">Total registrations</p>
+                </div>
+            </div>
+            <div class="gradient-border">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold mb-4">Media Uploads</h3>
+                    <div class="text-3xl font-bold text-blue-400 mb-2" id="mediaUploadsCount">0</div>
+                    <p class="text-sm text-gray-400">Total uploads</p>
+                </div>
+            </div>
+            <div class="gradient-border">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold mb-4">Current Period</h3>
+                    <div class="text-xl font-bold text-purple-400 mb-2" id="currentPeriod">Today</div>
+                    <p class="text-sm text-gray-400" id="periodDetails">Real-time data</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="gradient-border">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold mb-4">Analytics Overview</h3>
+                <canvas id="analyticsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="gradient-border">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold mb-4">Pending Registrations</h3>
+                <div class="space-y-4" id="pendingUsers">
+                    <!-- Pending users will be loaded dynamically -->
+                    <p class="text-gray-400" id="loadingText">Loading pending users...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+    <script>
+        // Analytics functionality
+        function loadAnalytics() {
+            const period = document.getElementById('periodSelect').value;
+            const params = new URLSearchParams({ period });
+
+            if (period === 'daily' && document.getElementById('dateInput').value) {
+                params.append('date', document.getElementById('dateInput').value);
+            } else if (period === 'monthly' && document.getElementById('monthInput').value) {
+                params.append('month', document.getElementById('monthInput').value);
+            } else if (period === 'yearly' && document.getElementById('yearInput').value) {
+                params.append('year', document.getElementById('yearInput').value);
+            }
+
+            fetch(`/api/admin/analytics?${params}`)
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    updateAnalyticsDisplay(result.analytics);
+                }
+            })
+            .catch(error => console.error('Error loading analytics:', error));
+        }
+
+        function updateAnalyticsDisplay(analytics) {
+            // Handle real data format with monthly data
+            if (analytics.userRegistrations !== undefined && analytics.mediaUploads !== undefined) {
+                // Real data format
+                document.getElementById('userRegistrationsCount').textContent = analytics.userRegistrations;
+                document.getElementById('mediaUploadsCount').textContent = analytics.mediaUploads;
+
+                let periodText = '';
+                let detailsText = '';
+
+                if (analytics.period === 'total') {
+                    periodText = 'All Time';
+                    detailsText = 'Total statistics';
+                } else if (analytics.period === 'daily') {
+                    periodText = analytics.filter.date ? new Date(analytics.filter.date).toLocaleDateString() : 'Today';
+                    detailsText = 'Daily statistics';
+                } else if (analytics.period === 'monthly') {
+                    periodText = analytics.filter.month ? new Date(analytics.filter.month).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+                    detailsText = 'Monthly statistics';
+                } else if (analytics.period === 'yearly') {
+                    periodText = analytics.filter.year || new Date().getFullYear();
+                    detailsText = 'Yearly statistics';
+                }
+
+                document.getElementById('currentPeriod').textContent = periodText;
+                document.getElementById('periodDetails').textContent = detailsText;
+
+                // Always render chart with analytics data for comparison purposes
+                renderAnalyticsChart(analytics);
+            } else if (analytics.daily || analytics.monthly || analytics.yearly) {
+                // Mock data format - display chart
+                renderAnalyticsChart(analytics);
+                document.getElementById('userRegistrationsCount').textContent = 'N/A';
+                document.getElementById('mediaUploadsCount').textContent = 'N/A';
+                document.getElementById('currentPeriod').textContent = 'Chart View';
+                document.getElementById('periodDetails').textContent = 'Mock data visualization';
+            }
+        }
+
+        function renderAnalyticsChart(analytics) {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (window.analyticsChart && typeof window.analyticsChart.destroy === 'function') {
+                window.analyticsChart.destroy();
+            }
+
+            let labels = analytics.chartLabels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            let userData = [];
+            let mediaData = [];
+
+            if (analytics.chartData && analytics.chartData.length > 0) {
+                // New format with chartData
+                userData = analytics.chartData.map(item => item.users || 0);
+                mediaData = analytics.chartData.map(item => item.media || 0);
+            } else if (analytics.monthlyData && analytics.monthlyData.length > 0) {
+                // Fallback to old format
+                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                userData = analytics.monthlyData.map(month => month.users || 0);
+                mediaData = analytics.monthlyData.map(month => month.media || 0);
+            }
+
+            try {
+                window.analyticsChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'User Registrations',
+                            data: userData,
+                            borderColor: '#00ff88',
+                            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Media Uploads',
+                            data: mediaData,
+                            borderColor: '#0088ff',
+                            backgroundColor: 'rgba(0, 136, 255, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#ffffff'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#ffffff',
+                                bodyColor: '#ffffff',
+                                borderColor: '#00ff88',
+                                borderWidth: 1,
+                                callbacks: {
+                                    title: function(context) {
+                                        const label = context[0].label;
+                                        const period = analytics.period;
+                                        const filter = analytics.filter;
+
+                                        if (period === 'daily') {
+                                            const hour = parseInt(label);
+                                            const date = filter.date ? new Date(filter.date) : new Date();
+                                            date.setHours(hour, 0, 0, 0);
+                                            return date.toLocaleString('en-US', {
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            });
+                                        } else if (period === 'monthly') {
+                                            const month = new Date(filter.month || new Date());
+                                            const day = parseInt(label);
+                                            const date = new Date(month.getFullYear(), month.getMonth(), day);
+                                            return date.toLocaleDateString('en-US', {
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            });
+                                        } else if (period === 'yearly') {
+                                            const year = filter.year || new Date().getFullYear();
+                                            const monthIndex = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(label);
+                                            const date = new Date(year, monthIndex, 1);
+                                            return date.toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long'
+                                            });
+                                        } else {
+                                            // Default monthly view for current year
+                                            const currentYear = new Date().getFullYear();
+                                            const monthIndex = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(label);
+                                            const date = new Date(currentYear, monthIndex, 1);
+                                            return date.toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long'
+                                            });
+                                        }
+                                    },
+                                    label: function(context) {
+                                        const datasetLabel = context.dataset.label;
+                                        const value = context.parsed.y;
+                                        return `${datasetLabel}: ${value}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: '#333333'
+                                },
+                                ticks: {
+                                    color: '#ffffff'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: '#333333'
+                                },
+                                ticks: {
+                                    color: '#ffffff'
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('Chart rendered successfully with', analytics.chartType || 'monthly', 'data');
+            } catch (error) {
+                console.error('Error creating chart:', error);
+            }
+        }
+
+        function toggleFilterInputs() {
+            const period = document.getElementById('periodSelect').value;
+            document.getElementById('dateFilter').classList.toggle('hidden', period !== 'daily');
+            document.getElementById('monthFilter').classList.toggle('hidden', period !== 'monthly');
+            document.getElementById('yearFilter').classList.toggle('hidden', period !== 'yearly');
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAnalytics();
+            toggleFilterInputs();
+
+            document.getElementById('periodSelect').addEventListener('change', toggleFilterInputs);
+            document.getElementById('applyFilterBtn').addEventListener('click', loadAnalytics);
+        });
+    </script>
+</body>
+</html>

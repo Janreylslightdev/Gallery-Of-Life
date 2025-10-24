@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Center - Gallery of Life</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        neon: '#00ff88',
+                        dark: '#0a0a0a',
+                        gray: '#1a1a1a'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+        }
+        .neon-glow {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+        .gradient-border {
+            background: linear-gradient(45deg, #00ff88, #0088ff);
+            padding: 2px;
+            border-radius: 8px;
+        }
+        .gradient-border > div {
+            background: #0a0a0a;
+            border-radius: 6px;
+        }
+        .chat-message {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .notification {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <nav class="bg-gray-900 p-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-neon to-blue-400 bg-clip-text text-transparent">
+                Support Center
+            </h1>
+            <div class="flex items-center space-x-4">
+                <div id="notificationBadge" class="relative hidden">
+                    <button class="text-neon hover:text-green-400 text-2xl" id="notificationBtn">
+                        &#x1F514;
+                    </button>
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center notification-count">3</span>
+                </div>
+                <button id="logoutBtn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex-1 max-w-7xl mx-auto w-full p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+            <!-- Active Chats -->
+            <div class="gradient-border">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold mb-4">Active Support Tickets</h3>
+                    <div class="space-y-3" id="activeChats">
+                        <!-- Support tickets will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="lg:col-span-2 gradient-border flex flex-col">
+                <div class="p-6 border-b border-gray-700">
+                    <h3 class="text-lg font-semibold" id="chatTitle">Select a support ticket to start chatting</h3>
+                </div>
+                <div class="flex-1 p-6 overflow-y-auto" id="chatMessages">
+                    <!-- Messages will be loaded dynamically -->
+                </div>
+                <div class="p-6 border-t border-gray-700">
+                    <form id="messageForm" class="flex space-x-4">
+                        <input type="text" id="messageInput" placeholder="Type your message..."
+                               class="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-neon focus:border-transparent">
+                        <button type="submit" class="px-6 py-2 bg-gradient-to-r from-neon to-blue-400 text-black font-semibold rounded-md hover:neon-glow transition-all duration-300">
+                            Send
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Panel -->
+    <div id="notificationPanel" class="fixed top-0 right-0 h-full w-80 bg-gray-900 shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Notifications</h3>
+                <button id="closeNotifications" class="text-gray-400 hover:text-white">
+                    &#x2716;
+                </button>
+            </div>
+            <div class="space-y-3" id="notifications">
+                <!-- Notifications will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

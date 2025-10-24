@@ -1,0 +1,466 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Gallery of Life</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        neon: '#00ff88',
+                        dark: '#0a0a0a',
+                        gray: '#1a1a1a'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+        }
+        .neon-glow {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+        .gradient-border {
+            background: linear-gradient(45deg, #00ff88, #0088ff);
+            padding: 2px;
+            border-radius: 8px;
+        }
+        .gradient-border > div {
+            background: #0a0a0a;
+            border-radius: 6px;
+        }
+        .carousel-item {
+            transition: transform 0.5s ease-in-out;
+        }
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+        .support-float {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+        .support-float:hover {
+            animation: none;
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(0, 255, 136, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(0, 255, 136, 0);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <nav class="bg-gray-900 p-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-neon to-blue-400 bg-clip-text text-transparent">
+                My Gallery
+            </h1>
+            <div class="space-x-4">
+                <button id="uploadBtn" class="px-4 py-2 bg-gradient-to-r from-neon to-blue-400 text-black font-semibold rounded-md hover:neon-glow transition-all duration-300">
+                    Upload Media
+                </button>
+                <button id="logoutBtn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Albums Navigation -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">My Albums</h2>
+            <div class="flex space-x-4 overflow-x-auto pb-2" id="albumsNav">
+                <button class="px-4 py-2 bg-gray-800 rounded-md hover:bg-neon hover:text-black transition-all duration-300 album-btn active" data-album="all">
+                    All Media
+                </button>
+            </div>
+            <div class="mt-4">
+                <button id="deleteAlbumBtn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors hidden">
+                    Delete Current Album
+                </button>
+            </div>
+        </div>
+
+        <!-- Media Carousel -->
+        <div class="gradient-border mb-8">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold mb-4">Featured Media</h3>
+                <div class="relative overflow-hidden rounded-lg">
+                    <div class="flex transition-transform duration-500 ease-in-out" id="carousel">
+                        <div class="carousel-item flex-shrink-0 w-full">
+                            <div class="w-full h-64 bg-gradient-to-br from-neon to-blue-400 rounded-lg flex items-center justify-center text-black font-bold text-xl hover-scale">
+                                Sample Image 1
+                            </div>
+                        </div>
+                        <div class="carousel-item flex-shrink-0 w-full">
+                            <div class="w-full h-64 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xl hover-scale">
+                                Sample Video
+                            </div>
+                        </div>
+                        <div class="carousel-item flex-shrink-0 w-full">
+                            <div class="w-full h-64 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-xl hover-scale">
+                                Sample Image 2
+                            </div>
+                        </div>
+                    </div>
+                    <button class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all" id="prevBtn">
+                        &#10094;
+                    </button>
+                    <button class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all" id="nextBtn">
+                        &#10095;
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Tickets Section -->
+        <div class="gradient-border mb-8">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center space-x-2">
+                    <svg class="w-5 h-5 text-neon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>My Support Tickets</span>
+                </h3>
+                <div class="space-y-3" id="supportTickets">
+                    <!-- Support tickets will be loaded dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Media Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="mediaGrid">
+            <!-- Mock media items -->
+            <div class="gradient-border media-item">
+                <div class="p-4">
+                    <div class="w-full h-32 bg-gradient-to-br from-neon to-blue-400 rounded-md mb-2 hover-scale flex items-center justify-center text-black font-bold">
+                        Image 1
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-400">image1.jpg</span>
+                        <div class="space-x-2">
+                            <button class="text-neon hover:text-green-400 view-btn" title="View">
+                                &#x1F441;
+                            </button>
+                            <button class="text-blue-500 hover:text-blue-400 notes-btn" title="Add Notes">
+                                &#x270F;
+                            </button>
+                            <button class="text-neon hover:text-green-400 download-btn" title="Download">
+                                &#x2193;
+                            </button>
+                            <button class="text-red-500 hover:text-red-400 delete-btn" title="Delete">
+                                &#x2716;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="gradient-border media-item">
+                <div class="p-4">
+                    <div class="w-full h-32 bg-gradient-to-br from-purple-500 to-pink-500 rounded-md mb-2 hover-scale flex items-center justify-center text-white font-bold">
+                        Video 1
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-400">video1.mp4</span>
+                        <div class="space-x-2">
+                            <button class="text-neon hover:text-green-400 download-btn" title="Download">
+                                &#x2193;
+                            </button>
+                            <button class="text-red-500 hover:text-red-400 delete-btn" title="Delete">
+                                &#x2716;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Add more mock items as needed -->
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="gradient-border max-w-md w-full mx-4">
+            <div class="bg-gray-900 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-4">Upload Media</h3>
+                <form id="uploadForm">
+                    <div class="mb-4">
+                        <label for="fileInput" class="block text-sm font-medium mb-2">Select Files (Multiple allowed)</label>
+                        <input type="file" id="fileInput" name="files" accept="image/*,video/*" multiple required
+                               class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-neon focus:border-transparent">
+                    </div>
+                    <div class="mb-4">
+                        <label for="albumInput" class="block text-sm font-medium mb-2">Album Name</label>
+                        <input type="text" id="albumInput" name="album" placeholder="Enter album name"
+                               class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-neon focus:border-transparent">
+                    </div>
+                    <div class="mb-4">
+                        <label for="notesInput" class="block text-sm font-medium mb-2">Notes (Optional)</label>
+                        <textarea id="notesInput" name="notes" placeholder="Add notes about your media..." rows="3"
+                                  class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-neon focus:border-transparent"></textarea>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button type="submit" class="flex-1 py-2 px-4 bg-gradient-to-r from-neon to-blue-400 text-black font-semibold rounded-md hover:neon-glow transition-all duration-300">
+                            Upload
+                        </button>
+                        <button type="button" id="cancelUpload" class="flex-1 py-2 px-4 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Modal -->
+    <div id="viewModal" class="fixed inset-0 bg-black bg-opacity-75 hidden flex items-center justify-center z-50">
+        <div class="max-w-4xl w-full mx-4">
+            <div class="bg-gray-900 p-6 rounded-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold" id="viewTitle">View Media</h3>
+                    <button id="closeViewModal" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                </div>
+                <div id="viewContent" class="flex justify-center">
+                    <!-- Media content will be inserted here -->
+                </div>
+                <div id="viewNotes" class="mt-4 p-4 bg-gray-800 rounded-md">
+                    <h4 class="font-semibold mb-2">Notes:</h4>
+                    <p id="notesText" class="text-gray-300"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes Modal -->
+    <div id="notesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="gradient-border max-w-md w-full mx-4">
+            <div class="bg-gray-900 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-4">Edit Notes</h3>
+                <form id="notesForm">
+                    <input type="hidden" id="notesMediaId" name="mediaId">
+                    <div class="mb-4">
+                        <label for="editNotesInput" class="block text-sm font-medium mb-2">Notes</label>
+                        <textarea id="editNotesInput" name="notes" rows="4" placeholder="Add or edit notes..."
+                                  class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-neon focus:border-transparent"></textarea>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button type="submit" class="flex-1 py-2 px-4 bg-gradient-to-r from-neon to-blue-400 text-black font-semibold rounded-md hover:neon-glow transition-all duration-300">
+                            Save Notes
+                        </button>
+                        <button type="button" id="cancelNotes" class="flex-1 py-2 px-4 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Support Floating Button -->
+    <div class="support-float">
+        <button id="supportBtn" class="bg-gradient-to-r from-neon to-blue-400 text-black font-bold py-3 px-4 rounded-full shadow-lg hover:neon-glow transition-all duration-300 flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+            </svg>
+            <span>Support</span>
+        </button>
+    </div>
+
+    <!-- Support Modal -->
+    <div id="supportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="gradient-border max-w-md w-full mx-4">
+            <div class="bg-gray-900 p-6 rounded-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold flex items-center space-x-2">
+                        <svg class="w-6 h-6 text-neon" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>Contact Support</span>
+                    </h3>
+                    <button id="closeSupportModal" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                </div>
+                <div class="space-y-4">
+                    <div class="text-center">
+                        <p class="text-gray-300 mb-4">Need help? Contact our support team!</p>
+                        <div class="space-y-3">
+                            <div class="flex items-center space-x-3 p-3 bg-gray-800 rounded-md">
+                                <svg class="w-5 h-5 text-neon" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                                </svg>
+                                <div>
+                                    <p class="font-semibold">Email Support</p>
+                                    <p class="text-sm text-gray-400">support@galleryoflife.com</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 p-3 bg-gray-800 rounded-md">
+                                <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div>
+                                    <p class="font-semibold">Live Chat</p>
+                                    <p class="text-sm text-gray-400">Available 24/7</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 p-3 bg-gray-800 rounded-md">
+                                <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div>
+                                    <p class="font-semibold">WhatsApp</p>
+                                    <p class="text-sm text-gray-400">+1 (555) 123-4567</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-700 pt-4">
+                        <h4 class="font-semibold mb-2">Quick Issue Report</h4>
+                        <form id="supportForm">
+                            <div class="mb-3">
+                                <select id="issueType" class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-neon focus:border-transparent">
+                                    <option value="">Select Issue Type</option>
+                                    <option value="upload">Upload Problem</option>
+                                    <option value="view">Viewing Media Issue</option>
+                                    <option value="account">Account Issue</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <textarea id="issueDescription" rows="3" placeholder="Describe your issue..."
+                                          class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-neon focus:border-transparent"></textarea>
+                            </div>
+                            <button type="submit" class="w-full py-2 px-4 bg-gradient-to-r from-neon to-blue-400 text-black font-semibold rounded-md hover:neon-glow transition-all duration-300">
+                                Submit Issue
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Chat Modal -->
+    <div id="ticketChatModal" class="fixed inset-0 bg-black bg-opacity-75 hidden flex items-center justify-center z-50">
+        <div class="gradient-border max-w-2xl w-full mx-4 h-3/4">
+            <div class="bg-gray-900 h-full rounded-lg flex flex-col">
+                <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                    <h3 class="text-lg font-semibold flex items-center space-x-2">
+                        <svg class="w-6 h-6 text-neon" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span id="ticketChatTitle">Support Chat</span>
+                    </h3>
+                    <button id="closeTicketChatModal" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 space-y-4" id="ticketChatMessages">
+                    <!-- Messages will be loaded here -->
+                </div>
+                <div class="p-4 border-t border-gray-700">
+                    <form id="ticketMessageForm" class="flex space-x-2">
+                        <input type="text" id="ticketMessageInput" placeholder="Type your message..."
+                               class="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-neon focus:border-transparent">
+                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-neon to-blue-400 text-black font-semibold rounded-md hover:neon-glow transition-all duration-300">
+                            Send
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+    <script>
+        // Support functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const supportBtn = document.getElementById('supportBtn');
+            const supportModal = document.getElementById('supportModal');
+            const closeSupportModal = document.getElementById('closeSupportModal');
+            const supportForm = document.getElementById('supportForm');
+
+            // Show support modal
+            supportBtn.addEventListener('click', function() {
+                supportModal.classList.remove('hidden');
+            });
+
+            // Close support modal
+            closeSupportModal.addEventListener('click', function() {
+                supportModal.classList.add('hidden');
+            });
+
+            // Close modal when clicking outside
+            supportModal.addEventListener('click', function(e) {
+                if (e.target === supportModal) {
+                    supportModal.classList.add('hidden');
+                }
+            });
+
+            // Handle support form submission
+            supportForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const issueType = document.getElementById('issueType').value;
+                const description = document.getElementById('issueDescription').value;
+
+                if (!issueType || !description.trim()) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+
+                try {
+                    const user = JSON.parse(localStorage.getItem('user'));
+                    if (!user || !user.id) {
+                        alert('Please log in first');
+                        return;
+                    }
+
+                    const response = await fetch('/api/support/create-ticket', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userId: user.id,
+                            issueType: issueType,
+                            description: description.trim()
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert('Support ticket created successfully! We will get back to you soon.');
+                        supportModal.classList.add('hidden');
+                        supportForm.reset();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Support form submission error:', error);
+                    alert('Failed to submit support request. Please try again.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
