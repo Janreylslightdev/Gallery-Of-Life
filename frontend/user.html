@@ -74,14 +74,14 @@
 <body class="min-h-screen">
     <nav class="bg-gray-900 p-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold bg-gradient-to-r from-neon to-blue-400 bg-clip-text text-transparent">
+            <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-neon to-blue-400 bg-clip-text text-transparent">
                 My Gallery
             </h1>
-            <div class="space-x-4">
-                <button id="uploadBtn" class="px-4 py-2 bg-gradient-to-r from-neon to-blue-400 text-black font-semibold rounded-md hover:neon-glow transition-all duration-300">
+            <div class="flex space-x-2 sm:space-x-4">
+                <button id="uploadBtn" class="px-3 sm:px-4 py-2 bg-gradient-to-r from-neon to-blue-400 text-black font-semibold rounded-md hover:neon-glow transition-all duration-300 text-sm sm:text-base">
                     Upload Media
                 </button>
-                <button id="logoutBtn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                <button id="logoutBtn" class="px-3 sm:px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm sm:text-base">
                     Logout
                 </button>
             </div>
@@ -111,17 +111,17 @@
                 <div class="relative overflow-hidden rounded-lg">
                     <div class="flex transition-transform duration-500 ease-in-out" id="carousel">
                         <div class="carousel-item flex-shrink-0 w-full">
-                            <div class="w-full h-64 bg-gradient-to-br from-neon to-blue-400 rounded-lg flex items-center justify-center text-black font-bold text-xl hover-scale">
+                            <div class="w-full h-48 sm:h-64 bg-gradient-to-br from-neon to-blue-400 rounded-lg flex items-center justify-center text-black font-bold text-lg sm:text-xl hover-scale">
                                 Sample Image 1
                             </div>
                         </div>
                         <div class="carousel-item flex-shrink-0 w-full">
-                            <div class="w-full h-64 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xl hover-scale">
+                            <div class="w-full h-48 sm:h-64 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-lg sm:text-xl hover-scale">
                                 Sample Video
                             </div>
                         </div>
                         <div class="carousel-item flex-shrink-0 w-full">
-                            <div class="w-full h-64 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-xl hover-scale">
+                            <div class="w-full h-48 sm:h-64 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-lg sm:text-xl hover-scale">
                                 Sample Image 2
                             </div>
                         </div>
@@ -280,11 +280,11 @@
 
     <!-- Support Floating Button -->
     <div class="support-float">
-        <button id="supportBtn" class="bg-gradient-to-r from-neon to-blue-400 text-black font-bold py-3 px-4 rounded-full shadow-lg hover:neon-glow transition-all duration-300 flex items-center space-x-2">
+        <button id="supportBtn" class="bg-gradient-to-r from-neon to-blue-400 text-black font-bold py-3 px-4 rounded-full shadow-lg hover:neon-glow transition-all duration-300 flex items-center space-x-2 min-h-[44px] min-w-[44px]">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
             </svg>
-            <span>Support</span>
+            <span class="hidden sm:inline">Support</span>
         </button>
     </div>
 
