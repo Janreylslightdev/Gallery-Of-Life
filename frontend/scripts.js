@@ -554,6 +554,9 @@ function selectChat(event, ticketId, userName) {
 
     document.getElementById('chatTitle').textContent = `Chat with ${userName}`;
     loadChatMessages(ticketId);
+
+    // Initialize Socket.IO connection for real-time messaging
+    initializeSocketIO(ticketId);
 }
 
 function loadChatMessages(ticketId) {
@@ -569,6 +572,9 @@ function loadChatMessages(ticketId) {
 
 function displayChatMessages(messages) {
     const container = document.getElementById('chatMessages');
+    const currentScrollTop = container.scrollTop;
+    const isAtBottom = container.scrollHeight - container.scrollTop === container.clientHeight;
+
     container.innerHTML = messages.map(msg => `
         <div class="chat-message mb-4 ${msg.senderType === 'support' ? 'flex items-start space-x-3 justify-end' : 'flex items-start space-x-3'}">
             ${msg.senderType === 'user' ? `
@@ -589,6 +595,13 @@ function displayChatMessages(messages) {
             ` : ''}
         </div>
     `).join('');
+
+    // Maintain scroll position or scroll to bottom if was at bottom
+    if (isAtBottom) {
+        container.scrollTop = container.scrollHeight;
+    } else {
+        container.scrollTop = currentScrollTop;
+    }
 }
 
 function sendMessage(event) {
@@ -603,6 +616,36 @@ function sendMessage(event) {
     const currentChat = document.querySelector('.chat-item.active');
     if (currentChat) {
         const ticketId = currentChat.dataset.user;
+
+        // Immediately add the message to UI for instant feedback
+        const container = document.getElementById('chatMessages');
+        const isAtBottom = container.scrollHeight - container.scrollTop === container.clientHeight;
+
+        const newMessageHTML = `
+            <div class="chat-message mb-4 flex items-start space-x-3 justify-end">
+                <div class="flex-1 text-right">
+                    <p class="text-sm text-gray-400 mb-1">You • ${new Date().toLocaleString()}</p>
+                    <div class="bg-neon text-black p-3 rounded-lg inline-block">
+                        <p>${message}</p>
+                    </div>
+                </div>
+                <div class="w-8 h-8 bg-neon text-black rounded-full flex items-center justify-center text-sm font-medium">
+                    S
+                </div>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', newMessageHTML);
+
+        // Scroll to bottom if was at bottom
+        if (isAtBottom) {
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Clear input immediately
+        messageInput.value = '';
+
+        // Send to server
         fetch(`/api/support/send-message/${ticketId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -610,12 +653,26 @@ function sendMessage(event) {
         })
         .then(response => response.json())
         .then(result => {
-            if (result.success) {
-                messageInput.value = '';
-                loadChatMessages(ticketId);
+            if (!result.success) {
+                // If sending failed, remove the optimistic message and show error
+                const messages = container.querySelectorAll('.chat-message');
+                if (messages.length > 0) {
+                    messages[messages.length - 1].remove();
+                }
+                alert('Failed to send message: ' + result.message);
+                messageInput.value = message; // Restore the message
             }
         })
-        .catch(error => console.error('Send message error:', error));
+        .catch(error => {
+            console.error('Send message error:', error);
+            // Remove the optimistic message on error
+            const messages = container.querySelectorAll('.chat-message');
+            if (messages.length > 0) {
+                messages[messages.length - 1].remove();
+            }
+            alert('Failed to send message. Please try again.');
+            messageInput.value = message; // Restore the message
+        });
     }
 }
 
@@ -793,6 +850,20 @@ function viewAllTickets() {
     window.location.href = 'support.html';
 }
 
+// Auto-refresh intervals (in milliseconds)
+const AUTO_REFRESH_INTERVALS = {
+    USER_DASHBOARD: 30000, // 30 seconds
+    ADMIN_DASHBOARD: 30000, // 30 seconds
+    SUPPORT_DASHBOARD: 15000, // 15 seconds
+    CHAT_MESSAGES: 2000 // 2 seconds when chat is active for faster updates
+};
+
+// Auto-refresh timers
+let userDashboardTimer;
+let adminDashboardTimer;
+let supportDashboardTimer;
+let chatMessagesTimer;
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
     // Login form
@@ -834,6 +905,9 @@ document.addEventListener('DOMContentLoaded', function() {
         checkAuth();
         loadPendingUsers();
         loadAnalytics();
+
+        // Start auto-refresh for admin dashboard
+        startAdminAutoRefresh();
     }
 
     // User dashboard
@@ -843,6 +917,9 @@ document.addEventListener('DOMContentLoaded', function() {
             loadUserMedia();
             loadUserSupportTickets();
             initCarousel();
+
+            // Start auto-refresh for user dashboard
+            startUserAutoRefresh();
 
             // Album navigation
             const albumBtns = document.querySelectorAll('.album-btn');
@@ -889,6 +966,9 @@ document.addEventListener('DOMContentLoaded', function() {
         checkAuth();
         loadSupportTickets();
 
+        // Start auto-refresh for support dashboard
+        startSupportAutoRefresh();
+
         const messageForm = document.getElementById('messageForm');
         if (messageForm) messageForm.addEventListener('submit', sendMessage);
 
@@ -910,3 +990,285 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// Auto-refresh functions
+function startUserAutoRefresh() {
+    // Clear any existing timer
+    if (userDashboardTimer) {
+        clearInterval(userDashboardTimer);
+    }
+
+    // Start auto-refresh for user media and support tickets
+    userDashboardTimer = setInterval(() => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && window.location.pathname.includes('user.html')) {
+            loadUserMedia();
+            loadUserSupportTickets();
+        } else {
+            clearInterval(userDashboardTimer);
+        }
+    }, AUTO_REFRESH_INTERVALS.USER_DASHBOARD);
+}
+
+function startAdminAutoRefresh() {
+    // Clear any existing timer
+    if (adminDashboardTimer) {
+        clearInterval(adminDashboardTimer);
+    }
+
+    // Start auto-refresh for admin analytics and pending users
+    adminDashboardTimer = setInterval(() => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && (user.accountType === 'ADMIN') && window.location.pathname.includes('admin.html')) {
+            loadPendingUsers();
+            loadAnalytics();
+        } else {
+            clearInterval(adminDashboardTimer);
+        }
+    }, AUTO_REFRESH_INTERVALS.ADMIN_DASHBOARD);
+}
+
+function startSupportAutoRefresh() {
+    // Clear any existing timer
+    if (supportDashboardTimer) {
+        clearInterval(supportDashboardTimer);
+    }
+
+    // Start auto-refresh for support tickets
+    supportDashboardTimer = setInterval(() => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && (user.accountType === 'SUPPORT' || user.accountType === 'ADMIN') && window.location.pathname.includes('support.html')) {
+            loadSupportTickets();
+
+            // Also refresh active chat messages if a chat is selected
+            const activeChat = document.querySelector('.chat-item.active');
+            if (activeChat) {
+                const ticketId = activeChat.dataset.user;
+                loadChatMessages(ticketId);
+            }
+        } else {
+            clearInterval(supportDashboardTimer);
+        }
+    }, AUTO_REFRESH_INTERVALS.SUPPORT_DASHBOARD);
+}
+
+function startChatAutoRefresh(ticketId) {
+    // Clear any existing chat timer
+    if (chatMessagesTimer) {
+        clearInterval(chatMessagesTimer);
+    }
+
+    // Start auto-refresh for chat messages
+    chatMessagesTimer = setInterval(() => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && ticketId) {
+            loadChatMessages(ticketId);
+        } else {
+            clearInterval(chatMessagesTimer);
+        }
+    }, AUTO_REFRESH_INTERVALS.CHAT_MESSAGES);
+}
+
+function stopChatAutoRefresh() {
+    if (chatMessagesTimer) {
+        clearInterval(chatMessagesTimer);
+        chatMessagesTimer = null;
+    }
+}
+
+// Socket.IO Functions
+let socket;
+
+function initializeSocketIO(ticketId) {
+    // Disconnect existing socket if any
+    if (socket) {
+        socket.disconnect();
+    }
+
+    // Initialize Socket.IO connection
+    socket = io();
+
+    // Join the ticket room
+    socket.emit('join-ticket', ticketId);
+
+    // Listen for new messages
+    socket.on('new-message', (message) => {
+        // Add the new message to the chat without refreshing
+        appendNewMessage(message);
+    });
+
+    // Listen for typing indicators
+    socket.on('user-typing', (data) => {
+        showTypingIndicator(data.userId, data.isTyping);
+    });
+}
+
+function appendNewMessage(message) {
+    const container = document.getElementById('chatMessages');
+    const isAtBottom = container.scrollHeight - container.scrollTop === container.clientHeight;
+
+    const messageHTML = `
+        <div class="chat-message mb-4 ${message.senderType === 'support' ? 'flex items-start space-x-3 justify-end' : 'flex items-start space-x-3'}">
+            ${message.senderType === 'user' ? `
+                <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-sm font-medium">
+                    U
+                </div>
+            ` : ''}
+            <div class="flex-1 ${message.senderType === 'support' ? 'text-right' : ''}">
+                <p class="text-sm text-gray-400 mb-1">${message.senderType === 'support' ? 'You' : message.senderId.email} • ${new Date(message.createdAt).toLocaleString()}</p>
+                <div class="bg-${message.senderType === 'support' ? 'neon text-black' : 'gray-800'} p-3 rounded-lg ${message.senderType === 'support' ? 'inline-block' : ''}">
+                    <p>${message.message}</p>
+                </div>
+            </div>
+            ${message.senderType === 'support' ? `
+                <div class="w-8 h-8 bg-neon text-black rounded-full flex items-center justify-center text-sm font-medium">
+                    S
+                </div>
+            ` : ''}
+        </div>
+    `;
+
+    container.insertAdjacentHTML('beforeend', messageHTML);
+
+    // Scroll to bottom if was at bottom
+    if (isAtBottom) {
+        container.scrollTop = container.scrollHeight;
+    }
+}
+
+function showTypingIndicator(userId, isTyping) {
+    const container = document.getElementById('chatMessages');
+    let typingIndicator = document.getElementById('typing-indicator');
+
+    if (isTyping) {
+        if (!typingIndicator) {
+            typingIndicator = document.createElement('div');
+            typingIndicator.id = 'typing-indicator';
+            typingIndicator.className = 'mb-4 flex items-start space-x-3';
+            typingIndicator.innerHTML = `
+                <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-sm font-medium">
+                    U
+                </div>
+                <div class="flex-1">
+                    <div class="bg-gray-800 p-3 rounded-lg inline-block">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(typingIndicator);
+        }
+    } else {
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+}
+
+function sendMessage(event) {
+    event.preventDefault();
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    const user = checkAuth();
+    if (!user) return;
+
+    const currentChat = document.querySelector('.chat-item.active');
+    if (currentChat) {
+        const ticketId = currentChat.dataset.user;
+
+        // Emit typing stop
+        if (socket) {
+            socket.emit('stop-typing', ticketId);
+        }
+
+        // Clear input immediately
+        messageInput.value = '';
+
+        // Immediately add the message to UI for instant feedback
+        const container = document.getElementById('chatMessages');
+        const isAtBottom = container.scrollHeight - container.scrollTop === container.clientHeight;
+
+        const newMessageHTML = `
+            <div class="chat-message mb-4 flex items-start space-x-3 justify-end">
+                <div class="flex-1 text-right">
+                    <p class="text-sm text-gray-400 mb-1">You • ${new Date().toLocaleString()}</p>
+                    <div class="bg-neon text-black p-3 rounded-lg inline-block">
+                        <p>${message}</p>
+                    </div>
+                </div>
+                <div class="w-8 h-8 bg-neon text-black rounded-full flex items-center justify-center text-sm font-medium">
+                    S
+                </div>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', newMessageHTML);
+
+        // Scroll to bottom if was at bottom
+        if (isAtBottom) {
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Send via Socket.IO if connected, otherwise fallback to HTTP
+        if (socket) {
+            socket.emit('send-message', {
+                ticketId: ticketId,
+                userId: user.id,
+                message: message
+            });
+        } else {
+            // Fallback to HTTP request
+            fetch(`/api/support/send-message/${ticketId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id, message })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (!result.success) {
+                    // If sending failed, remove the optimistic message and show error
+                    const messages = container.querySelectorAll('.chat-message');
+                    if (messages.length > 0) {
+                        messages[messages.length - 1].remove();
+                    }
+                    alert('Failed to send message: ' + result.message);
+                    messageInput.value = message; // Restore the message
+                }
+            })
+            .catch(error => {
+                console.error('Send message error:', error);
+                // Remove the optimistic message on error
+                const messages = container.querySelectorAll('.chat-message');
+                if (messages.length > 0) {
+                    messages[messages.length - 1].remove();
+                }
+                alert('Failed to send message. Please try again.');
+                messageInput.value = message; // Restore the message
+            });
+        }
+    }
+}
+
+// Typing indicator functions
+let typingTimer;
+
+function handleTyping() {
+    const currentChat = document.querySelector('.chat-item.active');
+    if (currentChat && socket) {
+        const ticketId = currentChat.dataset.user;
+        socket.emit('start-typing', ticketId);
+
+        // Clear existing timer
+        clearTimeout(typingTimer);
+
+        // Set timer to stop typing indicator after 1 second of no typing
+        typingTimer = setTimeout(() => {
+            socket.emit('stop-typing', ticketId);
+        }, 1000);
+    }
+}

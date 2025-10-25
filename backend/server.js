@@ -4,9 +4,18 @@ const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const http = require('http');
+const socketIo = require('socket.io');
 require('./db.js');
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 const PORT = process.env.PORT || 8080;
 
 // User Schema
@@ -568,6 +577,12 @@ app.post('/api/support/send-message/:ticketId', async (req, res) => {
         // Update ticket timestamp
         await SupportTicket.findByIdAndUpdate(ticketId, { updatedAt: new Date() });
 
+        // Populate sender info for real-time emission
+        await newMessage.populate('senderId', 'email accountType');
+
+        // Emit to all users in the ticket room for real-time updates
+        io.to(ticketId).emit('new-message', newMessage);
+
         res.json({ success: true, message: 'Message sent successfully' });
     } catch (error) {
         console.error('Send message error:', error);
@@ -683,7 +698,82 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
+
+    // Join a ticket room
+    socket.on('join-ticket', (ticketId) => {
+        socket.join(ticketId);
+        console.log(`User ${socket.id} joined ticket ${ticketId}`);
+    });
+
+    // Handle typing indicator
+    socket.on('typing', (data) => {
+        socket.to(data.ticketId).emit('user-typing', {
+            userId: data.userId,
+            isTyping: data.isTyping
+        });
+    });
+
+    // Handle new message
+    socket.on('send-message', async (data) => {
+        try {
+            const { ticketId, userId, message } = data;
+
+            // Verify ticket exists and user has access
+            const ticket = await SupportTicket.findById(ticketId);
+            if (!ticket) {
+                socket.emit('error', { message: 'Ticket not found' });
+                return;
+            }
+
+            // Check if user owns the ticket or is support/admin
+            const user = await User.findById(userId);
+            if (!user) {
+                socket.emit('error', { message: 'User not found' });
+                return;
+            }
+
+            const isOwner = ticket.userId.toString() === userId;
+            const isSupport = user.accountType === 'SUPPORT' || user.accountType === 'ADMIN';
+
+            if (!isOwner && !isSupport) {
+                socket.emit('error', { message: 'Access denied' });
+                return;
+            }
+
+            // Create message
+            const newMessage = new SupportMessage({
+                ticketId,
+                senderId: userId,
+                senderType: isSupport ? 'support' : 'user',
+                message: message.trim()
+            });
+
+            await newMessage.save();
+
+            // Update ticket timestamp
+            await SupportTicket.findByIdAndUpdate(ticketId, { updatedAt: new Date() });
+
+            // Populate sender info
+            await newMessage.populate('senderId', 'email accountType');
+
+            // Emit to all users in the ticket room
+            io.to(ticketId).emit('new-message', newMessage);
+
+        } catch (error) {
+            console.error('Socket send message error:', error);
+            socket.emit('error', { message: 'Failed to send message' });
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
+});
+
 // Start server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
