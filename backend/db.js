@@ -1,7 +1,12 @@
 const mongoose = require('mongoose');
 
-// Use Railway's MongoDB URL if available, otherwise fallback to Atlas
-const dbURI = process.env.DATABASE_URL || 'mongodb+srv://admin:9925@gallerydb.bpluh2u.mongodb.net/gallery_of_life';
+// Use environment variable for database URL
+const dbURI = process.env.DATABASE_URL;
+
+if (!dbURI) {
+    console.error('DATABASE_URL environment variable is not set');
+    process.exit(1);
+}
 
 mongoose.connect(dbURI)
 .then(() => console.log('Connected to MongoDB Atlas'))

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -84,10 +85,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configure multer for file uploads
+// Configure multer for file uploads (using Railway persistent storage)
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadDir = path.join(__dirname, '../uploads');
+        // Use Railway's persistent storage path
+        const uploadDir = process.env.NODE_ENV === 'production'
+            ? '/app/uploads'  // Railway persistent storage
+            : path.join(__dirname, '../uploads');  // Local development
+
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -115,18 +120,14 @@ const upload = multer({
 
 // Serve static files from frontend directory
 app.use(express.static(path.join(__dirname, '../frontend')));
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Serve uploaded files (using Railway persistent storage)
+app.use('/uploads', express.static(process.env.NODE_ENV === 'production'
+    ? '/app/uploads'  // Railway persistent storage
+    : path.join(__dirname, '../uploads')));  // Local development
 
-// Connect to MongoDB (replace with your connection string)
-mongoose.connect('mongodb://localhost:27017/gallery_of_life', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(async () => {
-    console.log('Connected to MongoDB');
-
-    // Create default admin user if it doesn't exist
+// Database connection is handled in db.js
+// Create default admin user if it doesn't exist
+mongoose.connection.once('open', async () => {
     try {
         const existingAdmin = await User.findOne({ accountType: 'ADMIN' });
         if (!existingAdmin) {
@@ -144,8 +145,7 @@ mongoose.connect('mongodb://localhost:27017/gallery_of_life', {
     } catch (error) {
         console.error('Error creating default admin:', error);
     }
-})
-.catch(err => console.error('MongoDB connection error:', err));
+});
 
 // Routes
 
@@ -691,6 +691,11 @@ app.use((error, req, res, next) => {
     }
     console.error('Unhandled error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
+});
+
+// Status endpoint for health checks
+app.get('/status', (req, res) => {
+    res.json({ status: 'running', timestamp: new Date().toISOString() });
 });
 
 // Serve index.html for root route
