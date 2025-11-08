@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard - Gallery of Life</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -12,8 +13,13 @@
                 extend: {
                     colors: {
                         neon: '#00ff88',
+                        neonBlue: '#0088ff',
+                        neonPurple: '#8a2be2',
                         dark: '#0a0a0a',
                         gray: '#1a1a1a'
+                    },
+                    fontFamily: {
+                        'futuristic': ['Orbitron', 'monospace']
                     }
                 }
             }
@@ -23,18 +29,38 @@
         body {
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
             color: #ffffff;
+            font-family: 'Orbitron', monospace;
+        }
+        .neon-text {
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.8), 0 0 20px rgba(0, 255, 136, 0.6), 0 0 30px rgba(0, 255, 136, 0.4);
         }
         .neon-glow {
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5), 0 0 40px rgba(0, 255, 136, 0.3);
+        }
+        .neon-glow-blue {
+            box-shadow: 0 0 20px rgba(0, 136, 255, 0.5), 0 0 40px rgba(0, 136, 255, 0.3);
         }
         .gradient-border {
-            background: linear-gradient(45deg, #00ff88, #0088ff);
-            padding: 2px;
-            border-radius: 8px;
+            background: linear-gradient(45deg, #00ff88, #0088ff, #8a2be2);
+            padding: 3px;
+            border-radius: 12px;
         }
         .gradient-border > div {
             background: #0a0a0a;
-            border-radius: 6px;
+            border-radius: 10px;
+        }
+        .sleek-button {
+            background: linear-gradient(45deg, #00ff88, #0088ff);
+            border: none;
+            color: #000;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .sleek-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.8), 0 0 50px rgba(0, 136, 255, 0.6);
         }
         .carousel-item {
             transition: transform 0.5s ease-in-out;
@@ -69,67 +95,76 @@
                 box-shadow: 0 0 0 0 rgba(0, 255, 136, 0);
             }
         }
+        .centered-text {
+            text-align: center;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body class="min-h-screen">
-    <nav class="bg-gray-900 p-4">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-neon to-blue-400 bg-clip-text text-transparent">
-                My Gallery
+    <nav class="bg-gray-900 p-2 sm:p-4">
+        <div class="max-w-7xl mx-auto relative flex items-center">
+            <!-- Mobile Logo (left side, extra small screens) -->
+            <h1 class="sm:hidden text-lg font-black neon-text bg-gradient-to-r from-neon via-neonBlue to-neonPurple bg-clip-text text-transparent font-futuristic">
+                GALLERY
             </h1>
-            <div class="flex space-x-2 sm:space-x-4">
-                <button id="uploadBtn" class="px-3 sm:px-4 py-2 bg-gradient-to-r from-neon to-blue-400 text-black font-semibold rounded-md hover:neon-glow transition-all duration-300 text-sm sm:text-base">
-                    Upload Media
+            <!-- Desktop Title (centered, small+ screens) -->
+            <h1 class="hidden sm:block absolute left-1/2 transform -translate-x-1/2 text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-black neon-text bg-gradient-to-r from-neon via-neonBlue to-neonPurple bg-clip-text text-transparent font-futuristic text-center">
+                MY GALLERY
+            </h1>
+            <div class="flex space-x-1 sm:space-x-2 md:space-x-4 ml-auto">
+                <button id="uploadBtn" class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 sleek-button rounded-md text-center text-xs sm:text-sm md:text-base">
+                    UPLOAD MEDIA
                 </button>
-                <button id="logoutBtn" class="px-3 sm:px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm sm:text-base">
+                <button id="logoutBtn" class="px-2 sm:px-3 md:px-4 py-1 sm:py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-xs sm:text-sm md:text-base">
                     Logout
                 </button>
             </div>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto p-6">
+    <div class="max-w-7xl mx-auto p-4 sm:p-6">
         <!-- Albums Navigation -->
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">My Albums</h2>
-            <div class="flex space-x-4 overflow-x-auto pb-2" id="albumsNav">
-                <button class="px-4 py-2 bg-gray-800 rounded-md hover:bg-neon hover:text-black transition-all duration-300 album-btn active" data-album="all">
+        <div class="mb-6 sm:mb-8">
+            <h2 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">My Albums</h2>
+            <div class="flex space-x-2 sm:space-x-4 overflow-x-auto pb-2" id="albumsNav">
+                <button class="px-3 sm:px-4 py-2 bg-gray-800 rounded-md hover:bg-neon hover:text-black transition-all duration-300 album-btn active text-sm sm:text-base">
                     All Media
                 </button>
             </div>
-            <div class="mt-4">
-                <button id="deleteAlbumBtn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors hidden">
+            <div class="mt-3 sm:mt-4">
+                <button id="deleteAlbumBtn" class="px-3 sm:px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors hidden text-sm sm:text-base">
                     Delete Current Album
                 </button>
             </div>
         </div>
 
         <!-- Media Carousel -->
-        <div class="gradient-border mb-8">
-            <div class="p-6">
-                <h3 class="text-lg font-semibold mb-4">Featured Media</h3>
+        <div class="gradient-border mb-6 sm:mb-8">
+            <div class="p-4 sm:p-6">
+                <h3 class="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Featured Media</h3>
                 <div class="relative overflow-hidden rounded-lg">
                     <div class="flex transition-transform duration-500 ease-in-out" id="carousel">
                         <div class="carousel-item flex-shrink-0 w-full">
-                            <div class="w-full h-48 sm:h-64 bg-gradient-to-br from-neon to-blue-400 rounded-lg flex items-center justify-center text-black font-bold text-lg sm:text-xl hover-scale">
+                            <div class="w-full h-32 sm:h-48 md:h-64 bg-gradient-to-br from-neon to-blue-400 rounded-lg flex items-center justify-center text-black font-bold text-base sm:text-lg md:text-xl hover-scale">
                                 Sample Image 1
                             </div>
                         </div>
                         <div class="carousel-item flex-shrink-0 w-full">
-                            <div class="w-full h-48 sm:h-64 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-lg sm:text-xl hover-scale">
+                            <div class="w-full h-32 sm:h-48 md:h-64 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-base sm:text-lg md:text-xl hover-scale">
                                 Sample Video
                             </div>
                         </div>
                         <div class="carousel-item flex-shrink-0 w-full">
-                            <div class="w-full h-48 sm:h-64 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-lg sm:text-xl hover-scale">
+                            <div class="w-full h-32 sm:h-48 md:h-64 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-base sm:text-lg md:text-xl hover-scale">
                                 Sample Image 2
                             </div>
                         </div>
                     </div>
-                    <button class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all" id="prevBtn">
+                    <button class="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-1 sm:p-2 rounded-full hover:bg-opacity-75 transition-all text-sm sm:text-base" id="prevBtn">
                         &#10094;
                     </button>
-                    <button class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all" id="nextBtn">
+                    <button class="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-1 sm:p-2 rounded-full hover:bg-opacity-75 transition-all text-sm sm:text-base" id="nextBtn">
                         &#10095;
                     </button>
                 </div>
@@ -137,41 +172,41 @@
         </div>
 
         <!-- Support Tickets Section -->
-        <div class="gradient-border mb-8">
-            <div class="p-6">
-                <h3 class="text-lg font-semibold mb-4 flex items-center space-x-2">
-                    <svg class="w-5 h-5 text-neon" fill="currentColor" viewBox="0 0 20 20">
+        <div class="gradient-border mb-6 sm:mb-8">
+            <div class="p-4 sm:p-6">
+                <h3 class="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center space-x-2">
+                    <svg class="w-4 sm:w-5 h-4 sm:h-5 text-neon" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                     </svg>
                     <span>My Support Tickets</span>
                 </h3>
-                <div class="space-y-3" id="supportTickets">
+                <div class="space-y-2 sm:space-y-3" id="supportTickets">
                     <!-- Support tickets will be loaded dynamically -->
                 </div>
             </div>
         </div>
 
         <!-- Media Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="mediaGrid">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6" id="mediaGrid">
             <!-- Mock media items -->
             <div class="gradient-border media-item">
-                <div class="p-4">
-                    <div class="w-full h-32 bg-gradient-to-br from-neon to-blue-400 rounded-md mb-2 hover-scale flex items-center justify-center text-black font-bold">
+                <div class="p-3 sm:p-4">
+                    <div class="w-full h-24 sm:h-32 md:h-40 bg-gradient-to-br from-neon to-blue-400 rounded-md mb-2 hover-scale flex items-center justify-center text-black font-bold text-sm sm:text-base">
                         Image 1
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">image1.jpg</span>
-                        <div class="space-x-2">
-                            <button class="text-neon hover:text-green-400 view-btn" title="View">
+                        <span class="text-xs sm:text-sm text-gray-400">image1.jpg</span>
+                        <div class="space-x-1 sm:space-x-2">
+                            <button class="text-neon hover:text-green-400 view-btn text-sm sm:text-base" title="View">
                                 &#x1F441;
                             </button>
-                            <button class="text-blue-500 hover:text-blue-400 notes-btn" title="Add Notes">
+                            <button class="text-blue-500 hover:text-blue-400 notes-btn text-sm sm:text-base" title="Add Notes">
                                 &#x270F;
                             </button>
-                            <button class="text-neon hover:text-green-400 download-btn" title="Download">
+                            <button class="text-neon hover:text-green-400 download-btn text-sm sm:text-base" title="Download">
                                 &#x2193;
                             </button>
-                            <button class="text-red-500 hover:text-red-400 delete-btn" title="Delete">
+                            <button class="text-red-500 hover:text-red-400 delete-btn text-sm sm:text-base" title="Delete">
                                 &#x2716;
                             </button>
                         </div>
@@ -179,17 +214,17 @@
                 </div>
             </div>
             <div class="gradient-border media-item">
-                <div class="p-4">
-                    <div class="w-full h-32 bg-gradient-to-br from-purple-500 to-pink-500 rounded-md mb-2 hover-scale flex items-center justify-center text-white font-bold">
+                <div class="p-3 sm:p-4">
+                    <div class="w-full h-24 sm:h-32 md:h-40 bg-gradient-to-br from-purple-500 to-pink-500 rounded-md mb-2 hover-scale flex items-center justify-center text-white font-bold text-sm sm:text-base">
                         Video 1
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">video1.mp4</span>
-                        <div class="space-x-2">
-                            <button class="text-neon hover:text-green-400 download-btn" title="Download">
+                        <span class="text-xs sm:text-sm text-gray-400">video1.mp4</span>
+                        <div class="space-x-1 sm:space-x-2">
+                            <button class="text-neon hover:text-green-400 download-btn text-sm sm:text-base" title="Download">
                                 &#x2193;
                             </button>
-                            <button class="text-red-500 hover:text-red-400 delete-btn" title="Delete">
+                            <button class="text-red-500 hover:text-red-400 delete-btn text-sm sm:text-base" title="Delete">
                                 &#x2716;
                             </button>
                         </div>

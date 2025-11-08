@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery of Life - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -12,8 +13,13 @@
                 extend: {
                     colors: {
                         neon: '#00ff88',
+                        neonBlue: '#0088ff',
+                        neonPurple: '#8a2be2',
                         dark: '#0a0a0a',
                         gray: '#1a1a1a'
+                    },
+                    fontFamily: {
+                        'futuristic': ['Orbitron', 'monospace']
                     }
                 }
             }
@@ -23,28 +29,52 @@
         body {
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
             color: #ffffff;
+            font-family: 'Orbitron', monospace;
+        }
+        .neon-text {
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.8), 0 0 20px rgba(0, 255, 136, 0.6), 0 0 30px rgba(0, 255, 136, 0.4);
         }
         .neon-glow {
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5), 0 0 40px rgba(0, 255, 136, 0.3);
+        }
+        .neon-glow-blue {
+            box-shadow: 0 0 20px rgba(0, 136, 255, 0.5), 0 0 40px rgba(0, 136, 255, 0.3);
         }
         .gradient-border {
-            background: linear-gradient(45deg, #00ff88, #0088ff);
-            padding: 2px;
-            border-radius: 8px;
+            background: linear-gradient(45deg, #00ff88, #0088ff, #8a2be2);
+            padding: 3px;
+            border-radius: 12px;
         }
         .gradient-border > div {
             background: #0a0a0a;
-            border-radius: 6px;
+            border-radius: 10px;
+        }
+        .sleek-button {
+            background: linear-gradient(45deg, #00ff88, #0088ff);
+            border: none;
+            color: #000;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .sleek-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.8), 0 0 50px rgba(0, 136, 255, 0.6);
+        }
+        .centered-text {
+            text-align: center;
+            line-height: 1.4;
         }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center">
     <div class="w-full max-w-md p-8">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-neon to-blue-400 bg-clip-text text-transparent">
-                Gallery of Life
+        <div class="text-center mb-8 centered-text">
+            <h1 class="text-4xl sm:text-5xl font-black mb-4 neon-text bg-gradient-to-r from-neon via-neonBlue to-neonPurple bg-clip-text text-transparent font-futuristic">
+                GALLERY OF LIFE
             </h1>
-            <p class="text-gray-400 text-sm sm:text-base">Memories Bring Back Memories</p>
+            <p class="text-gray-300 text-lg sm:text-xl font-light neon-text" style="text-shadow: 0 0 8px rgba(138, 43, 226, 0.6);">Memories Bring Back Memories</p>
         </div>
 
         <!-- Login Form -->
@@ -72,8 +102,8 @@
                         </select>
                     </div>
                     <button type="submit"
-                            class="w-full py-2 px-4 bg-gradient-to-r from-neon to-blue-400 text-black font-semibold rounded-md hover:neon-glow transition-all duration-300 transform hover:scale-105">
-                        Login
+                            class="w-full py-3 px-4 sleek-button rounded-md text-center">
+                        LOGIN
                     </button>
                 </form>
             </div>
@@ -109,8 +139,8 @@
                         </select>
                     </div>
                     <button type="submit"
-                            class="w-full py-2 px-4 bg-gradient-to-r from-neon to-blue-400 text-black font-semibold rounded-md hover:neon-glow transition-all duration-300 transform hover:scale-105">
-                        Sign Up
+                            class="w-full py-3 px-4 sleek-button rounded-md text-center">
+                        SIGN UP
                     </button>
                 </form>
                 <div class="text-center mt-4">

@@ -18,7 +18,7 @@ const io = socketIo(server, {
 });
 const PORT = process.env.PORT || 8080;
 
-// User Schema
+//schema
 const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -774,6 +774,7 @@ io.on('connection', (socket) => {
 });
 
 // Start server
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
+    console.log(`Access from other devices: http://192.168.7.112:${PORT}`);
 });
