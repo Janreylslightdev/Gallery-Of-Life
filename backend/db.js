@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 
-const dbURI = 'mongodb://localhost:27017/gallery_of_life'; // your local DB
+// Use Railway's MongoDB URL if available, otherwise fallback to local
+const dbURI = process.env.DATABASE_URL || 'mongodb://localhost:27017/gallery_of_life';
+
 mongoose.connect(dbURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
